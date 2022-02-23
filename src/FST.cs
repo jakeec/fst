@@ -3,17 +3,20 @@ public class FST
 {
     private readonly IDictionary<char, FST> _nodes;
     private readonly char _value;
+    private bool _isFinal;
 
     public FST(char value)
     {
         _value = value;
         _nodes = new Dictionary<char, FST>();
+        _isFinal = false;
     }
 
     private bool IsFinal() 
     {
-        return _nodes.Count() == 0;
+        return _nodes.Where(kvp => kvp.Value._isFinal).Any();
     }
+
     private FST InsertChild(char c, ref Queue<char> input) 
     {
         if (!_nodes.ContainsKey(c)) {
@@ -28,6 +31,12 @@ public class FST
         var next = InsertChild(q.Dequeue(), ref q);
         while (q.Count > 0) {
             next = next.InsertChild(q.Dequeue(), ref q);
+        }
+
+        if (!next._nodes.ContainsKey(' ')) {
+            var finalNode = new FST(' ');
+            finalNode._isFinal = true;
+            next._nodes.Add(' ', finalNode);
         }
     }
 
